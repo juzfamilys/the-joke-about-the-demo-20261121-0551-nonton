@@ -29,7 +29,27 @@ JOKE = (
 )
 
 
+def validate_joke(joke: str) -> None:
+    """Guard the entry before it is written.
+
+    The bounty wants one line of 1-280 characters, so refuse anything
+    that is not valid UTF-8, empty or whitespace-only, multi-line, or
+    outside the length range instead of writing a bad entry.
+    """
+    encoded = joke.encode("utf-8")  # raises UnicodeEncodeError if invalid
+    encoded.decode("utf-8")  # round-trip: must be valid UTF-8
+    if not joke.strip():
+        raise ValueError("joke must not be empty or whitespace-only")
+    if "\n" in joke or "\r" in joke:
+        raise ValueError("joke must be exactly one line")
+    if not 1 <= len(joke) <= 280:
+        raise ValueError(
+            f"joke must be 1-280 Unicode code points, got {len(joke)}"
+        )
+
+
 def main() -> None:
+    validate_joke(JOKE)
     output_dir = Path(os.environ.get("OUTPUT_DIR", "/output"))
     output_dir.mkdir(parents=True, exist_ok=True)
     entry_path = output_dir / "entry.txt"
